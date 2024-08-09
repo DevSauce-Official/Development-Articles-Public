@@ -1,0 +1,38 @@
+name:  Content  Update Workflow
+
+on: 
+ push:  
+  paths:
+       - 'Updates/JsonFiles/**.json' 
+
+ jobs:
+ process_updates: 
+   runs-on:  ubuntu-latest
+ steps: 
+   - name: Checkout  repository
+        uses:  actions/checkout@v3  
+   
+   -  name: Install  Python  
+     uses:  actions/setup-python@v3 
+     with:
+       python-version:  '3.9'  #  Replace  with your  version
+ 
+    - name: Install Dependencies
+     run: |  
+       pip  install  -r requirements.txt 
+
+     - name: Debug  JSON  File  Path 
+        run:  echo "Processing file:  ${{  github.event.repository.workspace }}/Updates/JsonFiles/${{  github.event.path  }}"
+
+    - name: Process  JSON Updates
+        uses: ./json_processor_action  # Replace  with your Action’s  location 
+        with:
+          json_file_path:  ${{ github.event.repository.workspace  }}/Updates/JsonFiles/${{ github.event.path }}  
+   -  name: Commit and  Push  Changes 
+        uses: stefanzweifel/git-auto-commit-action@v4 
+        with:  
+           commit_message:  "AI-Driven  Update: ${{  github.event.head_commit.message  }}  -  File: ${{ github.event.path  }}" 
+
+      -  name:  Check for Errors  
+          if:  failure()  
+          run: echo  "ERROR: An  error  occurred  during  the  workflow run." 
